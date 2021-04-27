@@ -4,15 +4,17 @@
     <div class="table">
       <div class="single-floor" :style="gridStyle" v-for="(floor,indexRow) in floorsArr">
         <div class="side-box" v-if="indexRow===0">Ground Floor</div>
-        <div class="side-box" v-else>{{toOrdinalSuffix(`${indexRow}`) }}</div>
-        <div class="box" v-for="(elevator,indexCul) in elevatorArr">
+        <div class="side-box" v-else>{{ toOrdinalSuffix(`${indexRow}`) }}</div>
+        <div class="box" v-for="(elevator,indexCol) in elevatorArr">
           <q-icon size="sm" v-if="indexRow===elevator.floor && elevator.elevatorStatus === 'call'" name="elevator"/>
           <q-icon color="red" size="sm" v-if="indexRow===elevator.floor && elevator.elevatorStatus === 'wait'"
                   name="elevator"/>
           <q-icon color="green" size="sm" v-if="indexRow===elevator.floor && elevator.elevatorStatus === 'arrived'"
                   name="elevator"/>
-          <span v-else>{{ indexRow }}</span>
+          <span v-else></span>
+          <span v-if="elevator.destination === indexRow">{{ floor.timeForElevator }}</span>
         </div>
+
         <div id="call" class="side-box">
           <q-btn v-if="floor.floorBtnStatus==='call'" no-caps color="green" @click="changeElevatorPosition(indexRow)">
             Call
@@ -37,24 +39,21 @@ export default {
       elevatorArr: [],
       floorsArr: [],
       callsQueue: [],
-      gotFreeElevator: true
+      gotFreeElevator: true,
     }
   },
   computed: {
     gridStyle() {
       return {
         display: "grid",
-        "grid-template-columns": `repeat(${this.elevators+2}, 1fr)`
+        "grid-template-columns": `repeat(${this.elevators + 2}, 1fr)`
       };
     }
   },
   watch: {
     gotFreeElevator: function () {
-      console.log('callsQueue: ', this.callsQueue)
-      if (this.callsQueue.length > 0) {
-        if (this.gotFreeElevator) {
-          this.changeElevatorPosition()
-        }
+      if (this.callsQueue.length > 0 && this.gotFreeElevator) {
+        this.changeElevatorPosition()
       }
     }
   },
@@ -70,25 +69,19 @@ export default {
           : int + ordinals[3];
     },
     checkFreeElevators() {
-      const freeElevators = this.elevatorArr.filter((elevator) => {
+      return this.elevatorArr.filter((elevator) => {
         return elevator.elevatorStatus === 'call'
-      });
-      console.log('freeElevators',freeElevators)
-      if (freeElevators.length === 0) {
-        return false
-      }
-      return freeElevators
+      })
     },
     findClosestElevator() {
       const freeElevators = this.checkFreeElevators()
-      if (!freeElevators) {
-        return 'allBusy'
+      if (!freeElevators.length) {
+        return null
       }
 
       const currentCall = this.callsQueue.shift()
-      console.log('currentCall',currentCall)
       let closestDifference = this.floorsArr.length
-      let closestElevator = {}
+      let closestElevator
       for (const elevator of freeElevators) {
         let difference = Math.abs(elevator.floor - currentCall)
         if (difference < closestDifference) {
@@ -99,40 +92,39 @@ export default {
       return closestElevator
     },
     changeElevatorPosition(indexRow) {
-      console.log(indexRow)
-      //FIND CLOSEST ELEVATOR
-      if(indexRow || indexRow === 0){
+      if (indexRow || indexRow === 0) {
         this.callsQueue.push(indexRow)
-      }else{
+      } else {
         indexRow = this.callsQueue[0]
       }
-
-      const found = this.findClosestElevator()
-      /////FOUND
+      //FIND CLOSEST ELEVATOR
+      const foundElevator = this.findClosestElevator()
       this.floorsArr[indexRow].floorBtnStatus = 'wait'
-      this.gotFreeElevator = false
-      if (found === 'allBusy') {
+      if (!foundElevator) {
         this.gotFreeElevator = false
         return
       }
-      found.elevatorStatus = 'wait'
-      let elevatorPos = found.floor
+      foundElevator.elevatorStatus = 'wait'
+      let elevatorPos = foundElevator.floor
       let position = elevatorPos
-      for (let i = 0; i <= Math.abs(elevatorPos - indexRow); i++) {
+      const distance = Math.abs(elevatorPos - indexRow)
+      foundElevator.destination = indexRow
+      this.floorsArr[indexRow].timeForElevator = `${distance} sec`
+      for (let i = 0; i <= distance; i++) {
         setTimeout(() => {
-          found.floor = indexRow <= elevatorPos ? position-- : position++
-          if (found.floor === indexRow) {
+          foundElevator.floor = indexRow <= elevatorPos ? position-- : position++
+          if (foundElevator.floor === indexRow) {
             this.floorsArr[indexRow].floorBtnStatus = 'arrived'
-            found.elevatorStatus = 'arrived'
-            found.floor = indexRow
-            console.log('Elevators:', this.elevatorArr)
+            foundElevator.elevatorStatus = 'arrived'
+            foundElevator.floor = indexRow
             const audio = new Audio('elevator-ding-sound.mp3')
-            // audio.play().then(()=>{
-            //   console.log('sound played!')}).catch((err)=>{
-            //   console.log('error: ',err)})
+            audio.play().then(()=>{
+              console.log('sound played!')}).catch((err)=>{
+              console.log('error: ',err)})
             setTimeout(() => {
               this.floorsArr[indexRow].floorBtnStatus = 'call'
-              found.elevatorStatus = 'call'
+              foundElevator.elevatorStatus = 'call'
+              this.floorsArr[indexRow].timeForElevator = ''
               this.gotFreeElevator = true
             }, 2000)
           }
@@ -145,19 +137,19 @@ export default {
         this.elevatorArr.push({
           floor: 0,
           name: `elevator${i}`,
-          elevatorStatus: 'call'
+          elevatorStatus: 'call',
+          destination: ''
         })
       }
-      console.log('elevatorrsss: ', this.elevatorArr)
     },
     createFloors() {
       for (let i = 0; i < this.floors; i++) {
         this.floorsArr.push({
           floorNum: i,
-          floorBtnStatus: 'call'
+          floorBtnStatus: 'call',
+          timeForElevator: ''
         })
       }
-      console.log('elevatorrsss: ', this.elevatorArr)
     }
   },
   created() {
