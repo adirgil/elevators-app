@@ -1,6 +1,6 @@
 <template>
   <div class="main-div">
-    <h2>Its My Elevators</h2>
+    <h2>This is My Building</h2>
     <div class="table">
       <div class="single-floor" :style="gridStyle" v-for="(floor,indexRow) in floorsArr">
         <div class="side-box" v-if="indexRow===0">Ground Floor</div>
@@ -28,14 +28,12 @@
 </template>
 
 <script>
-
+import {mapState} from "vuex";
 export default {
   name: 'Home',
   components: {},
   data() {
     return {
-      floors: 10,
-      elevators: 5,
       elevatorArr: [],
       floorsArr: [],
       callsQueue: [],
@@ -43,16 +41,18 @@ export default {
     }
   },
   computed: {
+    ...mapState('store', ['floors', 'elevators']),
     gridStyle() {
       return {
         display: "grid",
-        "grid-template-columns": `repeat(${this.elevators + 2}, 1fr)`
+        "grid-template-columns": `repeat(${parseInt(this.elevators) + 2}, 1fr)`
       };
     }
   },
   watch: {
     gotFreeElevator: function () {
       if (this.callsQueue.length > 0 && this.gotFreeElevator) {
+        console.log(this.callsQueue)
         this.changeElevatorPosition()
       }
     }
@@ -100,8 +100,8 @@ export default {
       //FIND CLOSEST ELEVATOR
       const foundElevator = this.findClosestElevator()
       this.floorsArr[indexRow].floorBtnStatus = 'wait'
+      this.gotFreeElevator = false
       if (!foundElevator) {
-        this.gotFreeElevator = false
         return
       }
       foundElevator.elevatorStatus = 'wait'
@@ -152,9 +152,11 @@ export default {
       }
     }
   },
+
+
   created() {
-    this.createElevators()
-    this.createFloors()
+      this.createElevators()
+      this.createFloors()
   }
 
 }
@@ -162,7 +164,7 @@ export default {
 
 <style scoped lang="sass">
 .main-div
-  background-color: silver
+  font-family: system-ui
 
 .single-floor
   height: 50px
@@ -186,4 +188,6 @@ export default {
 .table
   display: flex
   flex-direction: column-reverse
+  background-color: silver
+  padding: 5%
 </style>
