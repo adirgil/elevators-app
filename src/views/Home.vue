@@ -6,15 +6,12 @@
       <div class="single-floor" :style="gridStyle" v-for="(floor,indexRow) in floorsArr">
         <div class="side-box" v-if="indexRow===0">Ground Floor</div>
         <div class="side-box" v-else>{{ toOrdinalSuffix(`${indexRow}`) }}</div>
-        <div class="box" v-for="(elevator,indexCol) in elevatorArr">
-          <q-icon size="sm" v-if="indexRow===elevator.floor && elevator.elevatorStatus === 'call'" name="elevator"/>
-          <q-icon color="red" size="sm" v-if="indexRow===elevator.floor && elevator.elevatorStatus === 'wait'"
-                  name="elevator"/>
-          <q-icon color="green" size="sm" v-if="indexRow===elevator.floor && elevator.elevatorStatus === 'arrived'"
-                  name="elevator"/>
-          <span v-else></span>
-          <span v-if="elevator.destination === indexRow">{{ floor.timeForElevator }}</span>
-        </div>
+
+        <SingleElevator v-for="(elevator,indexCol) in elevatorArr"
+                        :key="indexCol"
+                        :elevator="elevator"
+                        :indexRow="indexRow"
+                        :floor="floor"/>
 
         <div id="call" class="side-box">
           <q-btn v-if="floor.floorBtnStatus==='call'" no-caps color="green" @click="changeElevatorPosition(indexRow)">
@@ -29,11 +26,12 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import {mapState,mapMutations} from "vuex";
+import SingleElevator from "../components/SingleElevator";
 
 export default {
   name: 'Home',
-  components: {},
+  components: {SingleElevator},
   data() {
     return {
       elevatorArr: [],
@@ -159,6 +157,7 @@ export default {
 
 
   created() {
+    console.log(this.elevators)
     if (!this.floors || !this.elevators) {
       this.displayErrorLabel = false
     }

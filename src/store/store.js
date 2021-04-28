@@ -1,6 +1,7 @@
 const state = {
     floors: 10,
-    elevators: 5
+    elevators: 5,
+
 }
 
 const mutations = {
