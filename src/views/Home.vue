@@ -2,7 +2,7 @@
   <div class="main-div">
     <h2>This is My Building</h2>
     <div class="table">
-      <h6 v-if="!displayTable">you entered 0 floors or 0 elevators, please choose again or refresh for default building</h6>
+      <h6 v-if="!displayErrorLabel">you entered 0 floors or 0 elevators, please choose again or refresh for default building</h6>
       <div class="single-floor" :style="gridStyle" v-for="(floor,indexRow) in floorsArr">
         <div class="side-box" v-if="indexRow===0">Ground Floor</div>
         <div class="side-box" v-else>{{ toOrdinalSuffix(`${indexRow}`) }}</div>
@@ -40,7 +40,7 @@ export default {
       floorsArr: [],
       callsQueue: [],
       gotFreeElevator: true,
-      displayTable: true
+      displayErrorLabel: true
     }
   },
   computed: {
@@ -160,7 +160,7 @@ export default {
 
   created() {
     if (!this.floors || !this.elevators) {
-      this.displayTable = false
+      this.displayErrorLabel = false
     }
     this.createElevators()
     this.createFloors()

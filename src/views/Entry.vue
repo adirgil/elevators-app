@@ -46,7 +46,9 @@ export default {
   display: grid
   justify-content: center
 .custom-div
-  margin-top: 5%
+  margin-top: 10%
 .mid-div
-  grid-template-columns: 1fr 1fr
+  grid-template-columns: 100fr 1fr
+.q-input
+  width: 30vh
 </style>
