@@ -1,13 +1,16 @@
 <template>
-  <div>
-    <q-icon size="xl" name="elevator"/>
-    <q-btn no-caps @click="$router.push('/home')">Default Building App</q-btn>
-    <div>
-      <span>Create Custom Building:</span>
-      <q-input outlined type="number" v-model="floorsCustomNum" label="Floors" />
-      <q-input outlined type="number" v-model="elevatorsCustomNum" label="Elevators" />
-      <q-btn no-caps @click="goToCustomApp">Go To Custom App</q-btn>
+  <div class="main-entry" >
+    <h2><q-icon size="xl" name="elevator"/>Elevators App<q-icon size="xl" name="elevator"/></h2>
+    <div class="mid-div">
+      <q-btn color="primary" no-caps @click="$router.push('/home')">Default Building App (10 floors - 5 elevators)</q-btn>
+      <div class="custom-div">
+        <span>Create Custom Building:</span>
+        <q-input outlined type="number" v-model="floorsCustomNum" label="Floors" />
+        <q-input outlined type="number" v-model="elevatorsCustomNum" label="Elevators" />
+        <q-btn color="deep-orange" no-caps @click="goToCustomApp">Create Custom App</q-btn>
+      </div>
     </div>
+
   </div>
 </template>
 
@@ -38,6 +41,12 @@ export default {
 }
 </script>
 
-<style scoped>
-
+<style lang="sass" scoped>
+.main-entry
+  display: grid
+  justify-content: center
+.custom-div
+  margin-top: 5%
+.mid-div
+  grid-template-columns: 1fr 1fr
 </style>

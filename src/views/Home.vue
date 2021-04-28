@@ -2,6 +2,7 @@
   <div class="main-div">
     <h2>This is My Building</h2>
     <div class="table">
+      <h6 v-if="!displayTable">you entered 0 floors or 0 elevators, please choose again or refresh for default building</h6>
       <div class="single-floor" :style="gridStyle" v-for="(floor,indexRow) in floorsArr">
         <div class="side-box" v-if="indexRow===0">Ground Floor</div>
         <div class="side-box" v-else>{{ toOrdinalSuffix(`${indexRow}`) }}</div>
@@ -29,6 +30,7 @@
 
 <script>
 import {mapState} from "vuex";
+
 export default {
   name: 'Home',
   components: {},
@@ -38,6 +40,7 @@ export default {
       floorsArr: [],
       callsQueue: [],
       gotFreeElevator: true,
+      displayTable: true
     }
   },
   computed: {
@@ -52,7 +55,6 @@ export default {
   watch: {
     gotFreeElevator: function () {
       if (this.callsQueue.length > 0 && this.gotFreeElevator) {
-        console.log(this.callsQueue)
         this.changeElevatorPosition()
       }
     }
@@ -118,9 +120,11 @@ export default {
             foundElevator.elevatorStatus = 'arrived'
             foundElevator.floor = indexRow
             const audio = new Audio('elevator-ding-sound.mp3')
-            audio.play().then(()=>{
-              console.log('sound played!')}).catch((err)=>{
-              console.log('error: ',err)})
+            audio.play().then(() => {
+              console.log('sound played!')
+            }).catch((err) => {
+              console.log('error: ', err)
+            })
             setTimeout(() => {
               this.floorsArr[indexRow].floorBtnStatus = 'call'
               foundElevator.elevatorStatus = 'call'
@@ -155,8 +159,11 @@ export default {
 
 
   created() {
-      this.createElevators()
-      this.createFloors()
+    if (!this.floors || !this.elevators) {
+      this.displayTable = false
+    }
+    this.createElevators()
+    this.createFloors()
   }
 
 }
